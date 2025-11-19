@@ -41,18 +41,18 @@ function initDesktop() {
   root.appendChild(taskbar);
 
   // 3D campfire background
-  const bg = new FireplaceBackground(root);
+  //const bg = new FireplaceBackground(root);
 
-  const handleResize = () => {
-    const rect = root.getBoundingClientRect();
-    bg.resize(rect.width, rect.height);
-  };
+  // const handleResize = () => {
+  //   const rect = root.getBoundingClientRect();
+  //   bg.resize(rect.width, rect.height);
+  // };
 
-  window.addEventListener("resize", handleResize);
-  handleResize();
+  // window.addEventListener("resize", handleResize);
+  // handleResize();
 
   // Optional: expose for debugging / tweaking from console
-  (window as any).portOsBg = bg;
+  //(window as any).portOsBg = bg;
 }
 
 initDesktop();
