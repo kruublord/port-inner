@@ -1,16 +1,4 @@
-/* Global reset-ish */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-:root {
-  color-scheme: dark;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-}
-
+/* === Global layout === */
 html,
 body {
   margin: 0;
@@ -19,269 +7,215 @@ body {
   height: 100%;
 }
 
-/* The whole OS desktop */
 #desktop-root {
-  position: relative;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
-  /* Cozy deep purple room */
-  background: radial-gradient(circle at top, #3b0764 0, #020617 55%, #000 100%);
-  color: #f9fafb;
-  user-select: none;
 }
 
-/* ─────────────────────────────────────────────
-   Campfire background
-   ───────────────────────────────────────────── */
-
-.campfire-layer {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding-bottom: 96px; /* leave room for taskbar + some ground */
-  z-index: 0;
-  pointer-events: none; /* never block clicks */
-}
-
-.campfire {
+/* === Desktop background === */
+.desktop {
   position: relative;
-  width: 220px;
-  height: 180px;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: #f5f5f5;
+
+  background: radial-gradient(
+    circle at top left,
+    #2f3b55,
+    #151821 60%,
+    #050609
+  );
 }
 
-/* Soft glow on the ground */
-.campfire-glow {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  width: 200px;
-  height: 80px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, #f97316 0, rgba(248, 250, 252, 0) 70%);
-  opacity: 0.32;
-  filter: blur(10px);
-}
-
-/* Logs */
-.logs {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  width: 160px;
-  height: 40px;
-  transform: translateX(-50%);
-}
-
-.log {
-  position: absolute;
-  bottom: 0;
-  width: 110px;
-  height: 26px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #4c1d95 0, #1e1b4b 60%, #020617 100%);
-  box-shadow: 0 4px 6px rgba(15, 23, 42, 0.6);
-}
-
-.log-left {
-  left: 12px;
-  transform: rotate(-18deg);
-}
-
-.log-right {
-  right: 12px;
-  transform: rotate(18deg);
-}
-
-/* Flames stack */
-.flames {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  width: 130px;
-  height: 120px;
-  transform: translateX(-50%);
-}
-
-/* Base flame shape: rounded pill */
-.flame {
-  position: absolute;
-  bottom: 0;
-  width: 38px;
-  height: 90px;
-  border-radius: 999px;
-  background: linear-gradient(to top, #f97316 0, #facc15 45%, #fef3c7 100%);
-  box-shadow: 0 0 18px rgba(251, 146, 60, 0.7);
-  transform-origin: 50% 100%;
-  animation: flame-flicker 1.4s infinite ease-in-out alternate;
-}
-
-/* Slight offsets and sizes for layered flames */
-.flame-1 {
-  left: 10px;
-  height: 70px;
-  animation-delay: -0.2s;
-}
-
-.flame-2 {
-  left: 40px;
-  height: 95px;
-  animation-delay: -0.6s;
-}
-
-.flame-3 {
-  left: 70px;
-  height: 80px;
-  animation-delay: -0.1s;
-}
-
-.flame-4 {
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 60px;
-  background: linear-gradient(to top, #f97316 0, #fed7aa 50%, #fff7ed 100%);
-  box-shadow: 0 0 14px rgba(251, 191, 36, 0.8);
-  animation-delay: -0.9s;
-}
-
-/* Tiny embers */
-.embers {
-  position: absolute;
-  bottom: 110px;
-  left: 50%;
-  width: 140px;
-  height: 80px;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.ember {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 999px;
-  background: #fee2e2;
-  opacity: 0.75;
-  animation: ember-rise 2.2s linear infinite;
-}
-
-.ember-1 {
-  left: 40%;
-  animation-delay: 0s;
-}
-
-.ember-2 {
-  left: 55%;
-  animation-delay: 0.6s;
-}
-
-.ember-3 {
-  left: 30%;
-  animation-delay: 1s;
-}
-
-.ember-4 {
-  left: 65%;
-  animation-delay: 1.4s;
-}
-
-/* Flame & ember animation keyframes */
-@keyframes flame-flicker {
-  0% {
-    transform: translateY(0) scaleY(1);
-    opacity: 0.9;
-  }
-  40% {
-    transform: translateY(-4px) scaleY(1.06);
-    opacity: 1;
-  }
-  70% {
-    transform: translateY(-7px) scaleY(0.96);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translateY(-10px) scaleY(1.08);
-    opacity: 0.85;
-  }
-}
-
-@keyframes ember-rise {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.85;
-  }
-  80% {
-    transform: translateY(-40px) scale(0.9);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translateY(-55px) scale(0.8);
-    opacity: 0;
-  }
-}
-
-/* ─────────────────────────────────────────────
-   Desktop layers
-   ───────────────────────────────────────────── */
-
-.desktop-icons,
-.desktop-windows {
+/* The layer that holds all icons */
+.desktop-icons-layer {
   position: absolute;
   inset: 0;
-  padding-bottom: 40px; /* leave room for taskbar */
 }
 
-/* Icons behind windows but above campfire */
-.desktop-icons {
-  z-index: 1;
+/* Show the grid as faint lines using a pseudo-element */
+.desktop-icons-layer--show-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+
+  background-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.18) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+
+  /* Match CELL_WIDTH / CELL_HEIGHT */
+  background-size: 104px 104px;
+
+  /* ❗ Shift the grid so lines start at DESKTOP_PADDING (16px) */
+  background-position: 16px 16px;
 }
 
-/* Windows above icons */
-.desktop-windows {
-  z-index: 2;
+/* Optional: style while dragging */
+.desktop-icon--dragging .desktop-icon__glyph {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
 }
 
-/* Taskbar at the bottom */
-.desktop-taskbar {
+/* === Desktop icons === */
+
+/* === Desktop icons === */
+
+.desktop-icon {
+  position: absolute;
+  width: 104px;
+  height: 104px; /* match CELL_HEIGHT */
+  text-align: center;
+  user-select: none;
+  cursor: default;
+
+  display: flex; /* center contents in cell */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Glyph box */
+.desktop-icon__glyph {
+  width: 64px;
+  height: 64px;
+  margin: 0 0 6px 0; /* no auto horizontal margin now */
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Label */
+.desktop-icon__label {
+  font-size: 12px;
+  line-height: 1.2;
+  color: #f5f5f5;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease, text-shadow 0.15s ease;
+}
+
+/* Hover microinteraction */
+.desktop-icon:hover .desktop-icon__glyph {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Selected state */
+.desktop-icon--selected .desktop-icon__glyph {
+  background: rgba(75, 141, 255, 0.9);
+  box-shadow: none;
+}
+
+.desktop-icon--selected .desktop-icon__label {
+  color: #ffffff;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+}
+/* Hover microinteraction – only for non-selected icons */
+.desktop-icon:not(.desktop-icon--selected):hover .desktop-icon__glyph {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* === Taskbar === */
+/* === Taskbar === */
+
+.taskbar {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-
-  height: 40px;
+  height: 54px;
   padding: 0 8px;
-
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 
-  background: rgba(15, 23, 42, 0.9);
-  border-top: 1px solid rgba(148, 163, 184, 0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-
-  z-index: 3;
+  background: rgba(8, 10, 18, 0.94);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
 }
 
-/* Taskbar sections */
-.taskbar-left {
-  font-weight: 600;
-  font-size: 0.9rem;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(30, 64, 175, 0.8);
-  border: 1px solid rgba(191, 219, 254, 0.4);
+.taskbar__section {
+  display: flex;
+  align-items: center;
 }
 
-.taskbar-right {
-  font-size: 0.8rem;
+.taskbar__section--left {
+  gap: 4px;
+}
+
+.taskbar__section--center {
+  flex: 1;
+  justify-content: center;
+  gap: 4px;
+}
+
+.taskbar__section--right {
+  gap: 12px;
+}
+
+/* Start button – square icon */
+.taskbar__start {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.taskbar__start-icon {
+  font-size: 18px;
+}
+
+/* App icons – square, no text labels shown */
+.taskbar__app-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.taskbar__app-icon-glyph {
+  font-size: 18px;
+}
+
+/* Hover effects */
+.taskbar__start:hover,
+.taskbar__app-icon:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Clock */
+.taskbar__clock {
+  font-size: 12px;
   opacity: 0.8;
 }
