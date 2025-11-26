@@ -83,29 +83,41 @@ body {
 }
 
 /* Glyph box */
+/* Desktop icon container stays as you had it (flex, centered, etc.) */
+
 .desktop-icon__glyph {
   width: 64px;
   height: 64px;
-  margin: 0 0 6px 0; /* no auto horizontal margin now */
+  margin: 0 0 6px 0;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  overflow: hidden; /* so images don't leak out of the rounded corners */
   transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Label */
+/* The actual PNG */
+.desktop-icon__image {
+  max-width: 70%;
+  max-height: 70%;
+  display: block;
+  pointer-events: none; /* 🔹 clicks/drags go to the .desktop-icon container */
+}
+
+/* Label – allow 2 lines, centered */
 .desktop-icon__label {
   font-size: 12px;
   line-height: 1.2;
   color: #f5f5f5;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  max-width: 96px;
+  text-align: center;
+
+  white-space: normal; /* allow wrapping */
+  word-break: break-word; /* break long words if needed */
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color 0.15s ease, text-shadow 0.15s ease;
 }
 
 /* Hover microinteraction */
@@ -133,22 +145,23 @@ body {
 /* === Taskbar === */
 /* === Taskbar === */
 
+/* Taskbar base (light / Windows-ish) */
 .taskbar {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 54px;
-  padding: 0 8px;
+  height: 60px;
+
+  padding: 0 16px; /* more breathing room */
   display: flex;
   align-items: center;
-  gap: 8px;
 
-  background: rgba(8, 10, 18, 0.94);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  background: #f7f7f7;
+  border-top: 1px solid #d0d0d0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
+  color: #111;
 }
 
 .taskbar__section {
@@ -157,45 +170,45 @@ body {
 }
 
 .taskbar__section--left {
-  gap: 4px;
+  gap: 8px; /* spacing between start + first app */
 }
 
 .taskbar__section--center {
   flex: 1;
-  justify-content: center;
-  gap: 4px;
+  justify-content: flex-start; /* icons start from the left */
+  gap: 8px; /* spacing between app icons */
 }
 
 .taskbar__section--right {
-  gap: 12px;
+  gap: 16px;
 }
 
-/* Start button – square icon */
 .taskbar__start {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   border: none;
-  outline: none;
   padding: 0;
-  background: rgba(255, 255, 255, 0.06);
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.taskbar__start-icon {
-  font-size: 18px;
+.taskbar__start-image {
+  width: 26px; /* <- bump this up */
+  height: 26px;
+  object-fit: contain;
 }
 
-/* App icons – square, no text labels shown */
+/* App buttons in taskbar */
 .taskbar__app-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   border: none;
-  outline: none;
   padding: 0;
   background: transparent;
   display: flex;
@@ -204,18 +217,265 @@ body {
   cursor: pointer;
 }
 
-.taskbar__app-icon-glyph {
-  font-size: 18px;
+/* The PNG inside each app button */
+.taskbar__app-icon-img {
+  width: 22px; /* adjust up/down if you want bigger/smaller */
+  height: 22px;
+  object-fit: contain;
+  display: block;
 }
 
-/* Hover effects */
-.taskbar__start:hover,
-.taskbar__app-icon:hover {
-  background: rgba(255, 255, 255, 0.14);
+/* Active / minimized visual states (optional, for your JS classes) */
+.taskbar__app-icon--active {
+  background: rgba(0, 0, 0, 0.04);
 }
 
-/* Clock */
+.taskbar__app-icon--minimized {
+  opacity: 0.4;
+}
+
+/* Clock: bigger and padded from right edge */
 .taskbar__clock {
-  font-size: 12px;
+  font-size: 14px; /* bigger */
+  padding-right: 4px;
   opacity: 0.8;
+}
+
+/* === Windows layer === */
+
+.desktop-windows-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* windows themselves re-enable pointer events */
+  z-index: 2;
+}
+
+.desktop-window {
+  position: absolute;
+  top: 80px;
+  left: 160px;
+  width: 720px;
+  height: 460px;
+
+  background: rgba(8, 10, 18, 0.98);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.desktop-window--maximized {
+  border-radius: 0;
+}
+
+.desktop-window__titlebar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  background: rgba(15, 20, 35, 0.98);
+  font-size: 13px;
+  user-select: none;
+}
+
+.desktop-window__title {
+  opacity: 0.9;
+}
+
+.desktop-window__controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.desktop-window__button {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.desktop-window__button--close:hover {
+  background: rgba(255, 90, 90, 0.9);
+}
+
+.desktop-window__button--minimize:hover,
+.desktop-window__button--maximize:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.desktop-window__content {
+  flex: 1;
+  background: #050609;
+}
+
+.desktop-window__content--text {
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.desktop-window__iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* === Resize handles === */
+
+.desktop-window__resize-handle {
+  position: absolute;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+/* edges */
+.desktop-window__resize-handle--top {
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.desktop-window__resize-handle--bottom {
+  bottom: 0;
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.desktop-window__resize-handle--left {
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.desktop-window__resize-handle--right {
+  right: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+/* corners */
+.desktop-window__resize-handle--tl {
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  cursor: nwse-resize;
+}
+
+.desktop-window__resize-handle--tr {
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  cursor: nesw-resize;
+}
+
+.desktop-window__resize-handle--bl {
+  bottom: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  cursor: nesw-resize;
+}
+
+.desktop-window__resize-handle--br {
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  cursor: nwse-resize;
+}
+
+/* Wallpaper layer that Vanta will draw into */
+.desktop-wallpaper-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none; /* so icons/windows remain clickable */
+}
+
+/* Make sure desktop root is positioned */
+#desktop-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Add this to your style.css */
+
+/* Add this to your style.css */
+
+.desktop-duck {
+  position: fixed;
+  width: 80px;
+  height: 80px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-40px, -40px); /* Center the duck on its position */
+}
+
+.duck-body {
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+  transition: transform 0.08s ease-out; /* Smooth CSS transition for rotation */
+}
+
+.duck-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
+}
+
+/* Walking animation for feet - alternating waddle */
+.desktop-duck.duck-walking .duck-feet ellipse:first-child {
+  animation: duck-waddle-left 0.3s infinite ease-in-out;
+}
+
+.desktop-duck.duck-walking .duck-feet ellipse:nth-child(2) {
+  animation: duck-waddle-right 0.3s infinite ease-in-out;
+}
+
+@keyframes duck-waddle-left {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes duck-waddle-right {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }

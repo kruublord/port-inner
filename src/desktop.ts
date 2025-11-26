@@ -1,16 +1,18 @@
 // src/desktop.ts
+import { createWindowsLayer, openApp } from "./window";
 
 const CELL_WIDTH = 104;
 const CELL_HEIGHT = 104;
 const DESKTOP_PADDING = 16;
 const TASKBAR_HEIGHT = 52;
 
-interface DesktopIcon {
+export interface DesktopIcon {
   id: string;
   appId: string;
   label: string;
   gridCol: number;
   gridRow: number;
+  iconSrc?: string;
 }
 
 interface GridLayout {
@@ -22,13 +24,21 @@ let selectedIconId: string | null = null;
 let currentLayout: GridLayout | null = null;
 
 const PLACEHOLDER_ICONS: DesktopIcon[] = [
-  { id: "icon-about", appId: "about", label: "About", gridCol: 0, gridRow: 0 },
+  {
+    id: "icon-about",
+    appId: "about",
+    label: "About",
+    gridCol: 0,
+    gridRow: 0,
+    iconSrc: "/icons/about.png",
+  },
   {
     id: "icon-projects",
     appId: "projects",
     label: "Projects",
     gridCol: 0,
     gridRow: 1,
+    iconSrc: "/icons/projects.png",
   },
   {
     id: "icon-contact",
@@ -36,13 +46,15 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     label: "Contact",
     gridCol: 0,
     gridRow: 2,
+    iconSrc: "/icons/contact.png",
   },
   {
     id: "icon-playground",
     appId: "playground",
-    label: "Playground",
+    label: "Browser",
     gridCol: 1,
     gridRow: 0,
+    iconSrc: "/icons/browser.png",
   },
 ];
 
@@ -92,6 +104,7 @@ function setSelectedIcon(root: HTMLElement, iconId: string | null) {
     }
   });
 }
+
 function isCellOccupied(
   col: number,
   row: number,
@@ -107,7 +120,9 @@ function isCellOccupied(
 function createIconElement(
   icon: DesktopIcon,
   root: HTMLElement,
-  iconsLayer: HTMLElement
+  iconsLayer: HTMLElement,
+  windowsLayer: HTMLElement,
+  appButtonsById: Record<string, HTMLButtonElement>
 ): HTMLElement {
   const container = document.createElement("div");
   container.className = "desktop-icon";
@@ -115,7 +130,15 @@ function createIconElement(
 
   const glyph = document.createElement("div");
   glyph.className = "desktop-icon__glyph";
-  glyph.textContent = "★";
+
+  if (icon.iconSrc) {
+    const img = document.createElement("img");
+    img.src = icon.iconSrc;
+    img.alt = icon.label;
+    img.className = "desktop-icon__image";
+    img.draggable = false;
+    glyph.appendChild(img);
+  }
 
   const label = document.createElement("div");
   label.className = "desktop-icon__label";
@@ -124,17 +147,18 @@ function createIconElement(
   container.appendChild(glyph);
   container.appendChild(label);
 
-  // --- Click = select ---
+  // Click = select
   container.addEventListener("click", (event) => {
     event.stopPropagation();
     setSelectedIcon(root, icon.id);
   });
 
-  // --- Double-click = "open app" (stub) ---
+  // Double-click = open app
   container.addEventListener("dblclick", (event) => {
     event.stopPropagation();
     setSelectedIcon(root, icon.id);
-    console.log(`Open app: ${icon.appId}`);
+    const taskbarButton = appButtonsById[icon.appId];
+    openApp(windowsLayer, icon, taskbarButton);
   });
 
   // --- Drag handling ---
@@ -146,11 +170,10 @@ function createIconElement(
   let startTop = 0;
   let startGridCol = icon.gridCol;
   let startGridRow = icon.gridRow;
-  const DRAG_THRESHOLD = 4; // px
+  const DRAG_THRESHOLD = 4;
 
   container.addEventListener("mousedown", (event) => {
-    if (event.button !== 0) return; // only left mouse
-    // do NOT preventDefault, so click can still fire if we don't drag
+    if (event.button !== 0) return;
 
     isDragging = true;
     hasMoved = false;
@@ -159,16 +182,15 @@ function createIconElement(
     startLeft = parseFloat(container.style.left || "0");
     startTop = parseFloat(container.style.top || "0");
 
-    // remember where this icon was in grid terms
     startGridCol = icon.gridCol;
     startGridRow = icon.gridRow;
+
     const onMouseMove = (moveEvent: MouseEvent) => {
       if (!isDragging) return;
 
       const dx = moveEvent.clientX - startMouseX;
       const dy = moveEvent.clientY - startMouseY;
 
-      // Don't treat tiny jitters as dragging
       if (
         !hasMoved &&
         Math.abs(dx) < DRAG_THRESHOLD &&
@@ -190,13 +212,6 @@ function createIconElement(
       newLeft = Math.min(Math.max(newLeft, DESKTOP_PADDING), maxLeft);
       newTop = Math.min(Math.max(newTop, DESKTOP_PADDING), maxTop);
 
-      // 🔹 LOG WHILE DRAGGING
-      console.log(
-        `[drag] icon=${icon.label} dx=${dx.toFixed(1)} dy=${dy.toFixed(
-          1
-        )} left=${newLeft.toFixed(1)} top=${newTop.toFixed(1)}`
-      );
-
       container.style.left = `${newLeft}px`;
       container.style.top = `${newTop}px`;
     };
@@ -210,7 +225,6 @@ function createIconElement(
 
       container.classList.remove("desktop-icon--dragging");
 
-      // If we never really moved, let the click/dblclick events handle selection/opening
       if (!hasMoved) {
         return;
       }
@@ -228,15 +242,21 @@ function createIconElement(
         currentLayout
       );
 
-      console.log(
-        `[drop] icon=${icon.label} center=(${centerX.toFixed(
-          1
-        )}, ${centerY.toFixed(
-          1
-        )}) -> target cell col=${targetCol} row=${targetRow}`
-      );
+      // If dropped back where it started, don't shift column
+      if (targetCol === startGridCol && targetRow === startGridRow) {
+        icon.gridCol = startGridCol;
+        icon.gridRow = startGridRow;
+        renderIcons(
+          iconsLayer,
+          PLACEHOLDER_ICONS,
+          currentLayout,
+          root,
+          windowsLayer,
+          appButtonsById
+        );
+        return;
+      }
 
-      // Build occupancy map for this column (excluding the icon we're dragging)
       const occupancy: { [row: number]: DesktopIcon } = {};
       for (const other of PLACEHOLDER_ICONS) {
         if (other.id === icon.id) continue;
@@ -245,7 +265,6 @@ function createIconElement(
         }
       }
 
-      // Check if there is at least one free row at or below the target row
       let hasFreeBelow = false;
       for (let r = targetRow; r < currentLayout.rows; r++) {
         if (!occupancy[r]) {
@@ -258,53 +277,38 @@ function createIconElement(
       let finalRow = targetRow;
 
       if (!hasFreeBelow) {
-        // Column is "full" from targetRow down – revert to where we started
-        console.log(
-          `[collision] column ${targetCol} full from row ${targetRow}, reverting ${icon.label} to (${startGridCol}, ${startGridRow})`
-        );
         finalCol = startGridCol;
         finalRow = startGridRow;
       } else {
-        // Shift icons down in this column from bottom up, starting above the last row
         for (let r = currentLayout.rows - 2; r >= targetRow; r--) {
           const occ = occupancy[r];
           if (occ && !occupancy[r + 1]) {
-            console.log(
-              `[shift] moving ${occ.label} from row ${r} -> row ${
-                r + 1
-              } in col ${targetCol}`
-            );
             occupancy[r + 1] = occ;
             delete occupancy[r];
-            occ.gridRow = r + 1; // update data for that icon
-            // occ.gridCol already == targetCol
+            occ.gridRow = r + 1;
           }
         }
 
-        // After shifting, if somehow targetRow is still occupied, revert
         if (occupancy[targetRow]) {
-          console.log(
-            `[unexpected] target cell still occupied after shift, reverting ${icon.label} to (${startGridCol}, ${startGridRow})`
-          );
           finalCol = startGridCol;
           finalRow = startGridRow;
         } else {
-          // We can place the dragged icon at the target cell
           finalCol = targetCol;
           finalRow = targetRow;
         }
       }
 
-      // Update dragged icon's logical position
       icon.gridCol = finalCol;
       icon.gridRow = finalRow;
 
-      console.log(
-        `[snap] icon=${icon.label} final cell=(${finalCol}, ${finalRow})`
+      renderIcons(
+        iconsLayer,
+        PLACEHOLDER_ICONS,
+        currentLayout,
+        root,
+        windowsLayer,
+        appButtonsById
       );
-
-      // 🔑 Re-render ALL icons so their DOM matches the updated grid data
-      renderIcons(iconsLayer, PLACEHOLDER_ICONS, currentLayout, root);
     };
 
     window.addEventListener("mousemove", onMouseMove);
@@ -318,13 +322,21 @@ function renderIcons(
   container: HTMLElement,
   icons: DesktopIcon[],
   layout: GridLayout,
-  root: HTMLElement
+  root: HTMLElement,
+  windowsLayer: HTMLElement,
+  appButtonsById: Record<string, HTMLButtonElement>
 ): void {
   container.innerHTML = "";
 
   for (const icon of icons) {
     const { x, y } = gridToPixel(icon.gridCol, icon.gridRow);
-    const el = createIconElement(icon, root, container);
+    const el = createIconElement(
+      icon,
+      root,
+      container,
+      windowsLayer,
+      appButtonsById
+    );
 
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
@@ -336,8 +348,10 @@ function renderIcons(
     setSelectedIcon(root, selectedIconId);
   }
 }
-
-function createTaskbar(): HTMLElement {
+function createTaskbar(windowsLayer: HTMLElement): {
+  bar: HTMLElement;
+  appButtonsById: Record<string, HTMLButtonElement>;
+} {
   const bar = document.createElement("div");
   bar.className = "taskbar";
 
@@ -345,11 +359,12 @@ function createTaskbar(): HTMLElement {
   left.className = "taskbar__section taskbar__section--left";
 
   const center = document.createElement("div");
-  center.className = "taskbar__section taskbar__section--center";
+  center.className = "taskbar__section taskbar__section--center"; // acts as spacer
 
   const right = document.createElement("div");
   right.className = "taskbar__section taskbar__section--right";
 
+  // Start button
   const startButton = document.createElement("button");
   startButton.className = "taskbar__start";
   const startIcon = document.createElement("span");
@@ -358,17 +373,30 @@ function createTaskbar(): HTMLElement {
   startButton.appendChild(startIcon);
   left.appendChild(startButton);
 
+  const appButtonsById: Record<string, HTMLButtonElement> = {};
+
   for (const icon of PLACEHOLDER_ICONS) {
     const appBtn = document.createElement("button");
     appBtn.className = "taskbar__app-icon";
     appBtn.title = icon.label;
+    appBtn.dataset.appId = icon.appId;
 
-    const glyph = document.createElement("span");
-    glyph.className = "taskbar__app-icon-glyph";
-    glyph.textContent = icon.label.charAt(0).toUpperCase();
+    if (icon.iconSrc) {
+      const img = document.createElement("img");
+      img.src = icon.iconSrc;
+      img.alt = icon.label;
+      img.className = "taskbar__app-icon-img";
+      img.draggable = false;
+      appBtn.appendChild(img);
+    }
 
-    appBtn.appendChild(glyph);
     center.appendChild(appBtn);
+    appButtonsById[icon.appId] = appBtn;
+
+    appBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openApp(windowsLayer, icon, appBtn);
+    });
   }
 
   const clock = document.createElement("div");
@@ -380,7 +408,7 @@ function createTaskbar(): HTMLElement {
   bar.appendChild(center);
   bar.appendChild(right);
 
-  return bar;
+  return { bar, appButtonsById };
 }
 
 export function initDesktop(root: HTMLElement): void {
@@ -391,16 +419,26 @@ export function initDesktop(root: HTMLElement): void {
   iconsLayer.style.top = "0";
   iconsLayer.style.left = "0";
   iconsLayer.style.right = "0";
-  iconsLayer.style.bottom = `${TASKBAR_HEIGHT}px`; // stop above taskbar
+  iconsLayer.style.bottom = `${TASKBAR_HEIGHT}px`;
 
-  const taskbar = createTaskbar();
+  const windowsLayer = createWindowsLayer();
+
+  const { bar: taskbar, appButtonsById } = createTaskbar(windowsLayer);
 
   root.appendChild(iconsLayer);
+  root.appendChild(windowsLayer);
   root.appendChild(taskbar);
 
   const layout = computeGridLayout(root);
   currentLayout = layout;
-  renderIcons(iconsLayer, PLACEHOLDER_ICONS, layout, root);
+  renderIcons(
+    iconsLayer,
+    PLACEHOLDER_ICONS,
+    layout,
+    root,
+    windowsLayer,
+    appButtonsById
+  );
 
   iconsLayer.addEventListener("click", () => {
     setSelectedIcon(root, null);
@@ -409,6 +447,13 @@ export function initDesktop(root: HTMLElement): void {
   window.addEventListener("resize", () => {
     const newLayout = computeGridLayout(root);
     currentLayout = newLayout;
-    renderIcons(iconsLayer, PLACEHOLDER_ICONS, newLayout, root);
+    renderIcons(
+      iconsLayer,
+      PLACEHOLDER_ICONS,
+      newLayout,
+      root,
+      windowsLayer,
+      appButtonsById
+    );
   });
 }
