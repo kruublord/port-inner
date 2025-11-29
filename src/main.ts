@@ -16,7 +16,7 @@ if (root instanceof HTMLElement) {
   wallpaper.setWallpaper(current);
 
   // Initialize the cursor-following duck!
-  const duck = initDuck(root);
+  initDuck(root);
 
   // Optional: You can adjust duck speed
   // duck.setSpeed(0.1); // Higher = faster (default is 0.08)

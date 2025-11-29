@@ -94,7 +94,7 @@ export class WallpaperManager {
       backgroundAlpha: 0.0, // keep your own desktop gradient
       backgroundColor: 0x050609, // fallback
 
-      color: 0x45679b, // wave color
+      color: 0x233a63, // wave color
       shininess: 10,
       waveHeight: 10,
       waveSpeed: 0.3,

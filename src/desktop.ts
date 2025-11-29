@@ -56,6 +56,14 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridRow: 0,
     iconSrc: "/icons/browser.png",
   },
+  {
+    id: "icon-credits",
+    appId: "credits",
+    label: "Credits",
+    gridCol: 1,
+    gridRow: 1,
+    iconSrc: "/icons/credits.png",
+  },
 ];
 
 function computeGridLayout(root: HTMLElement): GridLayout {
@@ -103,18 +111,6 @@ function setSelectedIcon(root: HTMLElement, iconId: string | null) {
       el.classList.remove("desktop-icon--selected");
     }
   });
-}
-
-function isCellOccupied(
-  col: number,
-  row: number,
-  icons: DesktopIcon[],
-  ignoreIconId?: string
-): boolean {
-  return icons.some(
-    (icon) =>
-      icon.gridCol === col && icon.gridRow === row && icon.id !== ignoreIconId
-  );
 }
 
 function createIconElement(
@@ -249,7 +245,6 @@ function createIconElement(
         renderIcons(
           iconsLayer,
           PLACEHOLDER_ICONS,
-          currentLayout,
           root,
           windowsLayer,
           appButtonsById
@@ -304,7 +299,6 @@ function createIconElement(
       renderIcons(
         iconsLayer,
         PLACEHOLDER_ICONS,
-        currentLayout,
         root,
         windowsLayer,
         appButtonsById
@@ -321,7 +315,6 @@ function createIconElement(
 function renderIcons(
   container: HTMLElement,
   icons: DesktopIcon[],
-  layout: GridLayout,
   root: HTMLElement,
   windowsLayer: HTMLElement,
   appButtonsById: Record<string, HTMLButtonElement>
@@ -429,12 +422,10 @@ export function initDesktop(root: HTMLElement): void {
   root.appendChild(windowsLayer);
   root.appendChild(taskbar);
 
-  const layout = computeGridLayout(root);
-  currentLayout = layout;
+  currentLayout = computeGridLayout(root);
   renderIcons(
     iconsLayer,
     PLACEHOLDER_ICONS,
-    layout,
     root,
     windowsLayer,
     appButtonsById
@@ -450,7 +441,6 @@ export function initDesktop(root: HTMLElement): void {
     renderIcons(
       iconsLayer,
       PLACEHOLDER_ICONS,
-      newLayout,
       root,
       windowsLayer,
       appButtonsById

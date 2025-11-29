@@ -84,17 +84,19 @@ body {
 
 /* Glyph box */
 /* Desktop icon container stays as you had it (flex, centered, etc.) */
-
 .desktop-icon__glyph {
   width: 64px;
   height: 64px;
   margin: 0 0 6px 0;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.08);
+
+  /* lighter glass tile instead of near-black */
+  backdrop-filter: blur(8px); /* optional, for glassy look */
+
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* so images don't leak out of the rounded corners */
+  overflow: hidden;
   transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
