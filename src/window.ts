@@ -231,16 +231,24 @@ function createWindowShell(
   const minimizeBtn = document.createElement("button");
   minimizeBtn.className =
     "desktop-window__button desktop-window__button--minimize";
-  minimizeBtn.textContent = "–";
+  const minIcon = document.createElement("i");
+  minIcon.className = "fa-solid fa-minus";
+  minimizeBtn.appendChild(minIcon);
 
   const maximizeBtn = document.createElement("button");
   maximizeBtn.className =
     "desktop-window__button desktop-window__button--maximize";
-  maximizeBtn.textContent = "▢";
+
+  const maxIcon = document.createElement("i");
+  // outlined square
+  maxIcon.className = "fa-regular fa-square";
+  maximizeBtn.appendChild(maxIcon);
 
   const closeBtn = document.createElement("button");
   closeBtn.className = "desktop-window__button desktop-window__button--close";
-  closeBtn.textContent = "✕";
+  const closeIcon = document.createElement("i");
+  closeIcon.className = "fa-solid fa-xmark";
+  closeBtn.appendChild(closeIcon);
 
   controls.appendChild(minimizeBtn);
   controls.appendChild(maximizeBtn);

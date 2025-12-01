@@ -294,17 +294,17 @@ body {
   align-items: center;
   gap: 4px;
 }
-
+/* Base app window buttons (About/Projects/etc.) */
 .desktop-window__button {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
   border: none;
   padding: 0;
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -318,6 +318,33 @@ body {
 .desktop-window__button--minimize:hover,
 .desktop-window__button--maximize:hover {
   background: rgba(255, 255, 255, 0.18);
+}
+
+/* === Sticky notes + notes list: glyph-only, bigger icons === */
+
+/* Sticky notes + list: glyph-only buttons */
+.desktop-window--note .desktop-window__button,
+.desktop-window--note-list .desktop-window__button,
+.sticky-notes-list__delete {
+  border: none;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  color: #222;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Make those icons bigger */
+.desktop-window--note .desktop-window__button i,
+.desktop-window--note-list .desktop-window__button i,
+.sticky-notes-list__delete i {
+  font-size: 20px; /* crank this up/down until it feels right */
 }
 
 .desktop-window__content {
@@ -480,4 +507,118 @@ body {
   50% {
     transform: translateY(-3px);
   }
+}
+/* Sticky note window */
+/* === Single sticky note window === */
+
+.desktop-window--note {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  color: #222;
+}
+
+.desktop-window__titlebar--note {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.desktop-window__content--note {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Rich text editor inside a note */
+
+.sticky-note__editor {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  color: #222;
+}
+
+/* Toolbar */
+
+.sticky-note__toolbar {
+  display: flex;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.sticky-note__btn {
+  border: none;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sticky-note__btn--bold {
+  font-weight: 700;
+}
+
+/* === Notes list window === */
+
+.desktop-window--note-list {
+  border-radius: 10px;
+  overflow: hidden;
+  color: #222;
+}
+
+.desktop-window__titlebar--note-list {
+  background: #ffedb3;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.desktop-window__content--note-list {
+  background: #fff7cf;
+  padding: 8px;
+}
+
+/* Notes list */
+
+.sticky-notes-list {
+  max-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sticky-notes-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  text-align: left;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-left-width: 4px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  background: #fffef3;
+  cursor: pointer;
+  color: #222;
+}
+
+.sticky-notes-list__row.is-closed {
+  opacity: 0.5;
+}
+
+.sticky-notes-list__preview {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

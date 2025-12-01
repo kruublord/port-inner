@@ -1,5 +1,6 @@
 // src/desktop.ts
 import { createWindowsLayer, openApp } from "./window";
+import { initStickyNotes, openNotesListWindow } from "./stickyNotes";
 
 const CELL_WIDTH = 104;
 const CELL_HEIGHT = 104;
@@ -150,9 +151,17 @@ function createIconElement(
   });
 
   // Double-click = open app
+  // NEW
   container.addEventListener("dblclick", (event) => {
     event.stopPropagation();
     setSelectedIcon(root, icon.id);
+
+    if (icon.appId === "credits") {
+      // Open / focus the Sticky Notes list window
+      openNotesListWindow(windowsLayer);
+      return;
+    }
+
     const taskbarButton = appButtonsById[icon.appId];
     openApp(windowsLayer, icon, taskbarButton);
   });
@@ -386,8 +395,15 @@ function createTaskbar(windowsLayer: HTMLElement): {
     center.appendChild(appBtn);
     appButtonsById[icon.appId] = appBtn;
 
+    // NEW
     appBtn.addEventListener("click", (event) => {
       event.stopPropagation();
+
+      if (icon.appId === "credits") {
+        openNotesListWindow(windowsLayer);
+        return;
+      }
+
       openApp(windowsLayer, icon, appBtn);
     });
   }
@@ -421,6 +437,7 @@ export function initDesktop(root: HTMLElement): void {
   root.appendChild(iconsLayer);
   root.appendChild(windowsLayer);
   root.appendChild(taskbar);
+  initStickyNotes(windowsLayer);
 
   currentLayout = computeGridLayout(root);
   renderIcons(
