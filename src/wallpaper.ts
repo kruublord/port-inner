@@ -35,8 +35,6 @@ export class WallpaperManager {
       this.initBirds();
     } else if (type === "waves") {
       this.initWaves();
-    } else if (type === "fog") {
-      this.initFog();
     }
   }
 
@@ -103,31 +101,6 @@ export class WallpaperManager {
   }
 
   // ---------- FOG ----------
-
-  private initFog() {
-    if (!window.VANTA.FOG) {
-      console.error("VANTA.FOG not loaded (check script tag)");
-      return;
-    }
-
-    this.vantaEffect = window.VANTA.FOG({
-      el: this.container,
-
-      mouseControls: false, // fog is nicer as a calm background
-      touchControls: false,
-      gyroControls: false,
-
-      backgroundAlpha: 0.0,
-      baseColor: 0x050609, // underneath
-      highlightColor: 0x6ea8ff, // bright edges
-      midtoneColor: 0x2b4c7e,
-      lowlightColor: 0x050609,
-
-      blurFactor: 0.55,
-      speed: 0.7,
-      zoom: 0.9,
-    });
-  }
 
   // ---------- CLEANUP ----------
 

@@ -1,10 +1,33 @@
 /* === Global layout === */
+
+/* === Custom font === */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/PlusJakartaSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/PlusJakartaSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
+}
+
+body {
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
 #desktop-root {
@@ -18,8 +41,8 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   color: #f5f5f5;
 
   background: radial-gradient(
@@ -259,15 +282,18 @@ body {
   width: 720px;
   height: 460px;
 
-  background: rgba(8, 10, 18, 0.98);
+  background: #ffffff; /* white window */
+  color: #111827; /* dark text inside window */
+
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #dcdfe6;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
   overflow: hidden;
 
   pointer-events: auto;
   display: flex;
   flex-direction: column;
+  z-index: 10;
 }
 
 .desktop-window--maximized {
@@ -280,13 +306,16 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 10px;
-  background: rgba(15, 20, 35, 0.98);
+  background: #f3f4f6;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
   font-size: 13px;
   user-select: none;
 }
 
 .desktop-window__title {
   opacity: 0.9;
+  font-weight: 500;
 }
 
 .desktop-window__controls {
@@ -294,74 +323,58 @@ body {
   align-items: center;
   gap: 4px;
 }
-/* Base app window buttons (About/Projects/etc.) */
+
+/* Controls: subtle, light-style buttons */
 .desktop-window__button {
   width: 24px;
   height: 24px;
   border-radius: 999px;
   border: none;
   padding: 0;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: transparent;
+  color: #4b5563;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.desktop-window__button--close:hover {
-  background: rgba(255, 90, 90, 0.9);
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
 .desktop-window__button--minimize:hover,
 .desktop-window__button--maximize:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(15, 23, 42, 0.06);
+  color: #111827;
+}
+
+.desktop-window__button--close:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+.desktop-window .window-app {
+  color: #111827;
 }
 
 /* === Sticky notes + notes list: glyph-only, bigger icons === */
 
-/* Sticky notes + list: glyph-only buttons */
-.desktop-window--note .desktop-window__button,
-.desktop-window--note-list .desktop-window__button,
-.sticky-notes-list__delete {
-  border: none;
-  background: none;
-  box-shadow: none;
-  border-radius: 0;
-  color: #222;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-/* Make those icons bigger */
-.desktop-window--note .desktop-window__button i,
-.desktop-window--note-list .desktop-window__button i,
-.sticky-notes-list__delete i {
-  font-size: 20px; /* crank this up/down until it feels right */
-}
-
 .desktop-window__content {
   flex: 1;
-  background: #050609;
+  background: #ffffff;
 }
 
 .desktop-window__content--text {
   padding: 16px;
   font-size: 14px;
   line-height: 1.5;
+  color: #111827;
 }
 
 .desktop-window__iframe {
   width: 100%;
   height: 100%;
   border: none;
+  background: #ffffff;
 }
 
 /* === Resize handles === */
@@ -510,68 +523,165 @@ body {
 }
 /* Sticky note window */
 /* === Single sticky note window === */
+/* ===========================
+   Sticky Notes (windows + list)
+   =========================== */
+
+/* --- Single sticky note window --- */
 
 .desktop-window--note {
+  /* base window styles come from .desktop-window; this just tweaks */
   border-radius: 12px;
   border: none;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   color: #222;
+  z-index: 1 !important;
 }
 
+/* thinner titlebar on notes; background colour is set inline to note.color */
 .desktop-window__titlebar--note {
   padding: 4px 8px;
   font-size: 12px;
 }
 
+/* content area of a note */
 .desktop-window__content--note {
-  padding: 6px;
+  flex: 1 1 auto; /* make it a flexible child of .desktop-window */
+  min-height: 0; /* <-- THIS is the important bit */
+  padding: 6px 6px 10px; /* a little extra at bottom for toolbar/handle */
   display: flex;
   flex-direction: column;
+  position: relative; /* anchor for the resize handle */
+  background: transparent; /* note background colour comes from inline style */
 }
 
-/* Rich text editor inside a note */
-
+/* Rich-text editor area inside a sticky note */
 .sticky-note__editor {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0; /* let it shrink within the content area */
+  overflow-y: auto; /* scroll text instead of pushing toolbar off */
+
   border: none;
   outline: none;
   background: transparent;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   font-size: 14px;
   line-height: 1.4;
   white-space: pre-wrap;
   color: #222;
 }
 
-/* Toolbar */
-
 .sticky-note__toolbar {
   display: flex;
+  align-items: center;
   gap: 4px;
-  padding-top: 4px;
+  padding: 4px 4px 0;
+  margin-top: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06); /* soft divider line */
+
+  /* hide by default */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
 }
 
+/* When note is "editing", show toolbar */
+.desktop-window--note.desktop-window--note-editing .sticky-note__toolbar {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Icon-only toolbar buttons (bold, bullets, colour) */
 .sticky-note__btn {
   border: none;
-  background: rgba(0, 0, 0, 0.06);
+  background: transparent;
   border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 12px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(0, 0, 0, 0.55);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sticky-note__btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.sticky-note__btn:active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Bold icon a tiny bit stronger */
+.sticky-note__btn--bold i {
+  font-weight: 700;
+}
+.sticky-note__btn--italic i {
+  font-style: italic;
+}
+.sticky-note__btn--underline i {
+  text-decoration: underline;
+}
+
+/* bullets + palette icon sizes */
+.sticky-note__btn i {
+  font-size: 13px;
+}
+
+/* resize handle in the bottom-right corner of a note */
+.sticky-note__resize-handle {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 12px;
+  height: 12px;
+  cursor: se-resize;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Use glyph-only buttons for notes and the notes list */
+.desktop-window--note .desktop-window__button,
+.desktop-window--note-list .desktop-window__button,
+.sticky-notes-list__delete {
+  border: none;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  color: #222;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
-.sticky-note__btn--bold {
-  font-weight: 700;
+/* Make the icons inside those buttons a bit bigger */
+.desktop-window--note .desktop-window__button i,
+.desktop-window--note-list .desktop-window__button i,
+.sticky-notes-list__delete i {
+  font-size: 20px;
 }
 
-/* === Notes list window === */
+/* --- Sticky notes list window --- */
 
 .desktop-window--note-list {
   border-radius: 10px;
   overflow: hidden;
   color: #222;
+  z-index: 1 !important;
 }
 
 .desktop-window__titlebar--note-list {
@@ -585,7 +695,7 @@ body {
   padding: 8px;
 }
 
-/* Notes list */
+/* List of notes inside the list window */
 
 .sticky-notes-list {
   max-height: 100%;
@@ -603,7 +713,7 @@ body {
 
   text-align: left;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  border-left-width: 4px;
+  border-left-width: 4px; /* colour strip set via inline style */
   border-radius: 6px;
   padding: 6px 8px;
   font-size: 13px;
@@ -621,4 +731,457 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.window-app h1 {
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+
+.window-app h2 {
+  font-size: 16px;
+  margin: 16px 0 6px;
+}
+
+.window-app h3 {
+  font-size: 14px;
+  margin: 12px 0 4px;
+}
+
+.window-app__header p {
+  margin: 0 0 8px;
+  opacity: 0.8;
+}
+
+.window-app__section {
+  margin-top: 12px;
+}
+
+.window-app__section--two-column {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.window-app p,
+.window-app li {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.window-app ul {
+  padding-left: 18px;
+  margin: 4px 0;
+}
+
+.window-app li {
+  margin: 2px 0;
+}
+
+/* Projects grid */
+.window-app__grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.project-card {
+  padding: 10px;
+  border-radius: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.project-card__meta {
+  font-size: 12px;
+  opacity: 0.7;
+  margin: 0 0 6px;
+}
+
+.project-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0;
+  margin: 8px 0 0;
+  list-style: none;
+}
+
+.project-card__tags li {
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #e5e7eb;
+}
+
+/* =========================
+   ABOUT & PROJECTS – FULL WINDOW
+   ========================= */
+
+/* Let About + Projects own the whole window content area */
+.desktop-window__content--text .window-app--about,
+.desktop-window__content--text .window-app--projects {
+  margin: -16px; /* cancel content padding */
+  min-height: calc(100% + 32px);
+  box-sizing: border-box;
+  position: relative;
+  padding: 24px 40px 28px;
+
+  /* remove “card” look */
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Backgrounds per app – reuse the contact gradient */
+.desktop-window__content--text .window-app--about,
+.desktop-window__content--text .window-app--projects {
+  background: radial-gradient(
+    circle at top left,
+    #e0f2fe 0,
+    #f9fafb 45%,
+    #ffffff 100%
+  );
+}
+
+/* Base strip layout for all app windows that own the background */
+.desktop-window__content--text .window-app--about::before,
+.desktop-window__content--text .window-app--projects::before,
+.desktop-window__content--text .window-app--contact-simple::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+}
+
+/* Per-app strip colours (all in the blue family but different) */
+.desktop-window__content--text .window-app--about::before {
+  background: #77a2d6; /* medium blue */
+}
+
+.desktop-window__content--text .window-app--projects::before {
+  background: #2abbff; /* cyan / sky blue */
+}
+
+.desktop-window__content--text .window-app--contact-simple::before {
+  background: #94a8df; /* your existing contact blue */
+}
+
+/* Top coloured strips (flush with edges) */
+.desktop-window__content--text .window-app--about::before,
+.desktop-window__content--text .window-app--projects::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+}
+
+/* === About layout (no inner card) === */
+
+.window-app--about .window-app__header {
+  padding-top: 6px;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* constrain width + centre content a bit */
+.window-app--about .window-app__about-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr);
+  gap: 24px;
+  align-items: start;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.window-app--about .about-text p {
+  max-width: 46rem;
+}
+
+.about-text__name {
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 0 0 4px;
+}
+
+.about-text__role {
+  font-size: 15px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0 0 18px;
+}
+
+.about-photo {
+  justify-self: end;
+  max-width: 300px;
+}
+
+.about-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+}
+
+.about-photo img:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.32);
+}
+
+/* === Projects layout (centred) === */
+
+.window-app--projects .window-app__header {
+  padding-top: 6px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.window-app--projects .window-app__grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.window-app--projects .project-card {
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e7eb;
+}
+
+/* Responsive stack for About on small widths */
+@media (max-width: 680px) {
+  .window-app--about .window-app__about-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .about-photo {
+    justify-self: center;
+    max-width: 200px;
+    order: -1; /* photo on top on small screens */
+  }
+
+  .desktop-window__content--text .window-app--about,
+  .desktop-window__content--text .window-app--projects {
+    padding: 18px 16px 22px;
+  }
+}
+
+/* =========================
+   CONTACT APP – FULL WINDOW
+   ========================= */
+
+/* Make the contact app fill the whole content area and own the background */
+.desktop-window__content--text .window-app--contact-simple {
+  margin: -16px; /* cancel the 16px padding from .desktop-window__content--text */
+  min-height: calc(100% + 32px);
+  box-sizing: border-box;
+
+  position: relative;
+  padding: 24px 40px 28px;
+
+  /* full-window background */
+  background: radial-gradient(
+    circle at top left,
+    #e0f2fe 0,
+    #f9fafb 45%,
+    #ffffff 100%
+  );
+  display: flex;
+  flex-direction: column;
+}
+
+/* ----- Header / top bar + divider ----- */
+
+.window-app--contact-simple .window-app__header--contact {
+  padding-top: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.4); /* divider line */
+}
+
+.window-app--contact-simple .window-app__header--contact h1 {
+  font-size: 24px;
+  margin: 0 0 4px;
+  letter-spacing: 0.02em;
+}
+
+.window-app--contact-simple .window-app__header--contact p {
+  margin: 0;
+  opacity: 0.85;
+  font-size: 13px;
+}
+
+.window-app--contact-simple .window-app__header--contact a {
+  color: #94a8df;
+  text-decoration: underline;
+}
+
+/* meta line under main copy */
+.window-app--contact-simple .contact-meta {
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* ----- Body layout (form + socials + footer) ----- */
+
+.window-app--contact-simple .contact-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* keep everything in a vertical stack, visually centered */
+.window-app--contact-simple .contact-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Form block */
+.window-app--contact-simple .contact-form {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* rows */
+.window-app--contact-simple .contact-form__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.window-app--contact-simple .contact-form label {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* inputs + textarea */
+.window-app--contact-simple .contact-form input,
+.window-app--contact-simple .contact-form textarea {
+  display: block;
+  width: 100%;
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease,
+    background 0.12s ease;
+}
+
+.window-app--contact-simple .contact-form input:focus,
+.window-app--contact-simple .contact-form textarea:focus {
+  border-color: #94a8df;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+  background: #ffffff;
+}
+
+/* primary button */
+.window-app--contact-simple .contact-form__actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.window-app--contact-simple .contact-form__actions button[type="submit"] {
+  padding: 8px 22px;
+  border-radius: 999px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  background: #94a8df;
+  color: #ffffff;
+
+  transition: background 0.12s ease, transform 0.08s ease-out,
+    box-shadow 0.08s ease-out;
+}
+
+.window-app--contact-simple .contact-form__actions button[type="submit"]:hover {
+  background: #7f96d6; /* darker, same family */
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(148, 168, 223, 0.45);
+}
+
+.window-app--contact-simple
+  .contact-form__actions
+  button[type="submit"]:active {
+  background: #6f88cf; /* darker still */
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(148, 168, 223, 0.35);
+}
+
+/* Note under form */
+.window-app--contact-simple .contact-note {
+  font-size: 11px;
+  opacity: 0.7;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Social icons row as subtle chips */
+.window-app--contact-simple .contact-socials {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.window-app--contact-simple .contact-socials a {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(37, 99, 235, 0.06);
+  color: #94a8df;
+  text-decoration: none;
+  transition: transform 0.08s ease-out, background 0.12s ease, color 0.12s ease;
+  font-size: 16px;
+}
+
+.window-app--contact-simple .contact-socials a:hover {
+  transform: translateY(-1px);
+  background: rgba(37, 99, 235, 0.14);
+  color: #94a8df;
+}
+
+/* Footer at very bottom */
+.window-app--contact-simple .contact-footer {
+  margin-top: 20px;
+  font-size: 10px;
+  opacity: 0.6;
+  text-align: center;
+}
+
+/* Small responsive tweak */
+@media (max-width: 640px) {
+  .desktop-window__content--text .window-app--contact-simple {
+    padding: 18px 16px 22px;
+  }
 }

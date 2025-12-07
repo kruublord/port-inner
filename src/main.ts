@@ -2,7 +2,7 @@ import "./style.css";
 import { initDesktop } from "./desktop";
 import { WallpaperManager } from "./wallpaper";
 import type { WallpaperType } from "./wallpaper";
-import { initDuck } from "./duck";
+//import { initDuck } from "./duck";
 
 const root = document.getElementById("desktop-root");
 
@@ -16,7 +16,7 @@ if (root instanceof HTMLElement) {
   wallpaper.setWallpaper(current);
 
   // Initialize the cursor-following duck!
-  initDuck(root);
+  //  initDuck(root);
 
   // Optional: You can adjust duck speed
   // duck.setSpeed(0.1); // Higher = faster (default is 0.08)

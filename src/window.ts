@@ -11,6 +11,224 @@ type AppInstance = {
 
 const runningApps = new Map<string, AppInstance>();
 let zCounter = 1;
+// ---- App registry types ----
+
+type TextAppConfig = {
+  kind: "text";
+  title: string;
+  bodyHtml: string;
+};
+
+type WebsiteAppConfig = {
+  kind: "website";
+  title: string;
+  url: string;
+};
+
+type PdfAppConfig = {
+  kind: "pdf";
+  title: string;
+  url: string; // path to pdf
+};
+
+type AppConfig = TextAppConfig | WebsiteAppConfig | PdfAppConfig;
+
+// ---- App HTML content ----
+
+const ABOUT_APP_HTML = `
+  <section class="window-app window-app--about">
+    <header class="window-app__header window-app__header--about">
+      <h1>About Me</h1>
+      <p>
+        Curious person who likes making small, playful things people enjoy using.
+      </p>
+    </header>
+
+    <div class="window-app__about-layout">
+      <div class="about-text">
+        <h2 class="about-text__name">Curtis Low</h2>
+        <p class="about-text__role">Interactive Developer</p>
+
+        <p>
+          Hello, I'm Curtis. I like building little experiences that feel
+          smooth, friendly, and fun to interact with. I enjoy the moment when
+          something simple on a screen suddenly “clicks” and feels right.
+        </p>
+
+        <p>
+          Most of my time goes into learning, experimenting, and slowly shaping
+          my own style of creating things. 
+        </p>
+
+        <p>
+          Away from the screen, I’m usually recharging with music, games, or
+          slow walks with a coffee and a wandering mind.
+        </p>
+      </div>
+
+      <div class="about-photo">
+        <img
+          src="/images/photo.webp"
+          alt="its me"
+        />
+      </div>
+    </div>
+  </section>
+`;
+
+const PROJECTS_APP_HTML = `
+  <section class="window-app window-app--projects">
+    <header class="window-app__header">
+      <h1>Projects</h1>
+      <p>A simple overview of some things I’ve worked on or might add here later.</p>
+    </header>
+
+    <div class="window-app__grid">
+      <article class="project-card">
+        <h2>Project One</h2>
+        <p class="project-card__meta">Short project tagline</p>
+        <p>
+          A brief description of a project can go here. You might mention what it does,
+          why you built it, or what part you enjoyed working on the most.
+        </p>
+        <ul class="project-card__tags">
+          <li>Tech A</li>
+          <li>Tech B</li>
+          <li>Keyword</li>
+        </ul>
+      </article>
+
+      <article class="project-card">
+        <h2>Project Two</h2>
+        <p class="project-card__meta">Another small experiment</p>
+        <p>
+          Use this space to describe another idea, prototype, or experiment.
+          Keep it to a couple of sentences so it’s easy to skim.
+        </p>
+        <ul class="project-card__tags">
+          <li>Framework</li>
+          <li>UI</li>
+          <li>Experiment</li>
+        </ul>
+      </article>
+
+      <article class="project-card">
+        <h2>Project Three</h2>
+        <p class="project-card__meta">Work in progress</p>
+        <p>
+          This card can be a placeholder for something you’re still exploring.
+          You can update the copy later once the idea becomes more concrete.
+        </p>
+        <ul class="project-card__tags">
+          <li>Concept</li>
+          <li>Prototype</li>
+          <li>WIP</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+`;
+const CONTACT_APP_HTML = `
+  <section class="window-app window-app--contact-simple">
+    <header class="window-app__header window-app__header--contact">
+      <h1>Get in touch</h1>
+      <p>
+        HELLO!
+      </p>
+    </header>
+
+    <div class="contact-body">
+      <div class="contact-center">
+        <form class="contact-form" autocomplete="off">
+          <div class="contact-form__row">
+            <label for="contact-name">Name</label>
+            <input
+              id="contact-name"
+              name="name"
+              type="text"
+              placeholder="Your name"
+              required
+            />
+          </div>
+
+          <div class="contact-form__row">
+            <label for="contact-email">Your email</label>
+            <input
+              id="contact-email"
+              name="email"
+              type="email"
+              placeholder="example@mail.com"
+              required
+            />
+          </div>
+
+          <div class="contact-form__row">
+            <label for="contact-message">Message</label>
+            <textarea
+              id="contact-message"
+              name="message"
+              rows="4"
+              placeholder="Write your message..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="contact-form__actions">
+            <button type="submit">Send Message</button>
+          </div>
+        </form>
+
+
+
+        <div class="contact-socials">
+          <a href="#" aria-label="LinkedIn">
+            <i class="fa-brands fa-linkedin"></i>
+          </a>
+          <a href="https://github.com/kruublord" target="_blank" rel="noreferrer" aria-label="GitHub">
+            <i class="fa-brands fa-github"></i>
+          </a>
+
+          <a href="mailto:you@example.com" aria-label="Email">
+            <i class="fa-regular fa-envelope"></i>
+          </a>
+        </div>
+      </div>
+
+      <p class="contact-footer">PortOS </p>
+    </div>
+  </section>
+`;
+
+// ---- App registry ----
+
+const APP_REGISTRY: Record<string, AppConfig> = {
+  about: {
+    kind: "text",
+    title: "About",
+    bodyHtml: ABOUT_APP_HTML,
+  },
+  projects: {
+    kind: "text",
+    title: "Projects",
+    bodyHtml: PROJECTS_APP_HTML,
+  },
+  contact: {
+    kind: "text",
+    title: "Contact",
+    bodyHtml: CONTACT_APP_HTML,
+  },
+  playground: {
+    kind: "website",
+    title: "Browser",
+    url: "https://inner-portfolio-js.vercel.app/",
+  },
+
+  resume: {
+    kind: "pdf",
+    title: "Resume",
+    url: "/Resume.pdf",
+  },
+};
 
 export function createWindowsLayer(): HTMLElement {
   const layer = document.createElement("div");
@@ -211,10 +429,25 @@ function createWindowShell(
   win.className = "desktop-window";
 
   // some default size/position
-  win.style.width = "720px";
-  win.style.height = "460px";
-  win.style.left = "160px";
-  win.style.top = "80px";
+  // default size/position: almost full screen
+  // default size/position: large but not full screen
+  // default size/position: large but not full screen
+  const containerRect = windowsLayer.getBoundingClientRect();
+
+  // slightly skinnier
+  const widthFactor = 0.65; // was 0.75
+  const heightFactor = 0.7; // keep this the same
+
+  const defaultWidth = containerRect.width * widthFactor;
+  const defaultHeight = containerRect.height * heightFactor;
+
+  const left = (containerRect.width - defaultWidth) / 2;
+  const top = (containerRect.height - defaultHeight) / 2;
+
+  win.style.width = `${defaultWidth}px`;
+  win.style.height = `${defaultHeight}px`;
+  win.style.left = `${left}px`;
+  win.style.top = `${top}px`;
 
   bringToFront(win);
 
@@ -362,6 +595,30 @@ function createWindowShell(
 }
 
 // ---- Content helpers ----
+export function openPdfWindow(
+  windowsLayer: HTMLElement,
+  appId: string,
+  url: string,
+  title: string,
+  taskbarButton?: HTMLButtonElement
+): void {
+  const { content } = createWindowShell(
+    windowsLayer,
+    appId,
+    title,
+    taskbarButton
+  );
+
+  const iframe = document.createElement("iframe");
+  iframe.className = "desktop-window__iframe";
+  iframe.src = url;
+
+  // Optional nice-to-have attributes
+  iframe.setAttribute("title", title);
+  iframe.setAttribute("loading", "lazy");
+
+  content.appendChild(iframe);
+}
 
 export function openWebsiteWindow(
   windowsLayer: HTMLElement,
@@ -426,76 +683,44 @@ export function openApp(
     return;
   }
 
-  // Not running → open new window
-  switch (icon.appId) {
-    case "about":
-      openTextWindow(
-        windowsLayer,
-        icon.appId,
-        "About",
-        `
-          <h1>About me</h1>
-          <p>
-            This is a placeholder about window.
-            Replace this with your real intro / role / vibe.
-          </p>
-        `,
-        taskbarButton
-      );
-      break;
+  // Not running yet → look up config
+  const config = APP_REGISTRY[icon.appId];
 
-    case "projects":
-      openTextWindow(
-        windowsLayer,
-        icon.appId,
-        "Projects",
-        `
-          <h1>Projects</h1>
-          <p>Highlight a few things you're proud of:</p>
-          <ul>
-            <li><strong>Project 1</strong> – short one-liner.</li>
-            <li><strong>Project 2</strong> – tech / purpose.</li>
-            <li><strong>Project 3</strong> – anything fun or weird.</li>
-          </ul>
-        `,
-        taskbarButton
-      );
-      break;
+  if (!config) {
+    // Fallback for unknown apps
+    openTextWindow(
+      windowsLayer,
+      icon.appId,
+      icon.label,
+      `<p>This app isn't wired up yet.</p>`,
+      taskbarButton
+    );
+    return;
+  }
 
-    case "contact":
-      openTextWindow(
-        windowsLayer,
-        icon.appId,
-        "Contact",
-        `
-          <h1>Contact</h1>
-          <ul>
-            <li>Email: <a href="mailto:you@example.com">you@example.com</a></li>
-            <li>GitHub: <a href="https://github.com/your-handle" target="_blank" rel="noreferrer">github.com/your-handle</a></li>
-            <li>LinkedIn: <a href="https://linkedin.com/in/your-handle" target="_blank" rel="noreferrer">linkedin.com/in/your-handle</a></li>
-          </ul>
-        `,
-        taskbarButton
-      );
-      break;
-
-    case "playground":
-      openWebsiteWindow(
-        windowsLayer,
-        icon.appId,
-        "https://inner-portfolio-js.vercel.app/",
-        icon.label,
-        taskbarButton
-      );
-      break;
-
-    default:
-      openTextWindow(
-        windowsLayer,
-        icon.appId,
-        icon.label,
-        `<p>This app isn't wired up yet.</p>`,
-        taskbarButton
-      );
+  if (config.kind === "text") {
+    openTextWindow(
+      windowsLayer,
+      icon.appId,
+      config.title,
+      config.bodyHtml,
+      taskbarButton
+    );
+  } else if (config.kind === "website") {
+    openWebsiteWindow(
+      windowsLayer,
+      icon.appId,
+      config.url,
+      config.title,
+      taskbarButton
+    );
+  } else if (config.kind === "pdf") {
+    openPdfWindow(
+      windowsLayer,
+      icon.appId,
+      config.url,
+      config.title,
+      taskbarButton
+    );
   }
 }

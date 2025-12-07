@@ -23,7 +23,6 @@ interface GridLayout {
 
 let selectedIconId: string | null = null;
 let currentLayout: GridLayout | null = null;
-
 const PLACEHOLDER_ICONS: DesktopIcon[] = [
   {
     id: "icon-about",
@@ -49,6 +48,16 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridRow: 2,
     iconSrc: "/icons/contact.png",
   },
+
+  {
+    id: "icon-resume",
+    appId: "resume",
+    label: "Resume",
+    gridCol: 0,
+    gridRow: 3,
+    iconSrc: "/icons/resume.png",
+  },
+
   {
     id: "icon-playground",
     appId: "playground",
