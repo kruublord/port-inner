@@ -40,7 +40,7 @@ const ABOUT_APP_HTML = `
     <header class="window-app__header window-app__header--about">
       <h1>About Me</h1>
       <p>
-        Curious person who likes making small, playful things people enjoy using.
+
       </p>
     </header>
 
@@ -50,19 +50,15 @@ const ABOUT_APP_HTML = `
         <p class="about-text__role">Interactive Developer</p>
 
         <p>
-          Hello, I'm Curtis. I like building little experiences that feel
-          smooth, friendly, and fun to interact with. I enjoy the moment when
-          something simple on a screen suddenly “clicks” and feels right.
+          hello there
         </p>
 
         <p>
-          Most of my time goes into learning, experimenting, and slowly shaping
-          my own style of creating things. 
+
         </p>
 
         <p>
-          Away from the screen, I’m usually recharging with music, games, or
-          slow walks with a coffee and a wandering mind.
+
         </p>
       </div>
 
@@ -80,30 +76,29 @@ const PROJECTS_APP_HTML = `
   <section class="window-app window-app--projects">
     <header class="window-app__header">
       <h1>Projects</h1>
-      <p>A simple overview of some things I’ve worked on or might add here later.</p>
+      <p>Some of my projects</p>
     </header>
 
     <div class="window-app__grid">
       <article class="project-card">
-        <h2>Project One</h2>
-        <p class="project-card__meta">Short project tagline</p>
+        <h2>project 1</h2>
+        <p class="project-card__meta">aaaaaaaaaaaaa</p>
         <p>
-          A brief description of a project can go here. You might mention what it does,
-          why you built it, or what part you enjoyed working on the most.
+        very nice project description here
+          
         </p>
         <ul class="project-card__tags">
-          <li>Tech A</li>
-          <li>Tech B</li>
-          <li>Keyword</li>
+          <li> bing </li>
+          <li> bong </li>
         </ul>
       </article>
 
       <article class="project-card">
-        <h2>Project Two</h2>
-        <p class="project-card__meta">Another small experiment</p>
+        <h2>project 2</h2>
+        <p class="project-card__meta">asdfasdfasdt</p>
         <p>
-          Use this space to describe another idea, prototype, or experiment.
-          Keep it to a couple of sentences so it’s easy to skim.
+        another very cool project here
+        
         </p>
         <ul class="project-card__tags">
           <li>Framework</li>
@@ -114,15 +109,11 @@ const PROJECTS_APP_HTML = `
 
       <article class="project-card">
         <h2>Project Three</h2>
-        <p class="project-card__meta">Work in progress</p>
+        <p class="project-card__meta">asdfasdfasfasfs</p>
         <p>
-          This card can be a placeholder for something you’re still exploring.
-          You can update the copy later once the idea becomes more concrete.
+         lorem lorem lorem lorem lorem lorem
         </p>
         <ul class="project-card__tags">
-          <li>Concept</li>
-          <li>Prototype</li>
-          <li>WIP</li>
         </ul>
       </article>
     </div>
@@ -199,6 +190,28 @@ const CONTACT_APP_HTML = `
   </section>
 `;
 
+const PHOTOS_APP_HTML = `
+  <section class="window-app window-app--photos">
+    <header class="window-app__header">
+      <h1>Photos</h1>
+      <p>A simple gallery of images.</p>
+    </header>
+
+    <div class="photos-grid">
+      <button class="photos-grid__item" type="button">
+        <img src="/photos/photo.jpg" alt="Photo 1" />
+      </button>
+      <button class="photos-grid__item" type="button">
+        <img src="/photos/photo2.jpg" alt="Photo 2" />
+      </button>
+      <button class="photos-grid__item" type="button">
+        <img src="/photos/photo3.jpg" alt="Photo 3" />
+      </button>
+      <!-- add more as needed -->
+    </div>
+  </section>
+`;
+
 // ---- App registry ----
 
 const APP_REGISTRY: Record<string, AppConfig> = {
@@ -227,6 +240,11 @@ const APP_REGISTRY: Record<string, AppConfig> = {
     kind: "pdf",
     title: "Resume",
     url: "/Resume.pdf",
+  },
+  photos: {
+    kind: "text",
+    title: "Photos",
+    bodyHtml: PHOTOS_APP_HTML,
   },
 };
 
@@ -656,6 +674,75 @@ export function openTextWindow(
   );
   content.classList.add("desktop-window__content--text");
   content.innerHTML = bodyHtml;
+
+  // 🔹 Special setup for Photos app
+  if (appId === "photos") {
+    initPhotosApp(content);
+  }
+}
+function initPhotosApp(root: HTMLElement): void {
+  const photosSection = root.querySelector<HTMLElement>(".window-app--photos");
+  if (!photosSection) return;
+
+  const items =
+    photosSection.querySelectorAll<HTMLButtonElement>(".photos-grid__item");
+  if (!items.length) return;
+
+  // --- Build overlay once and reuse it ---
+  const overlay = document.createElement("div");
+  overlay.className = "photos-viewer";
+
+  overlay.innerHTML = `
+    <div class="photos-viewer__backdrop"></div>
+    <div class="photos-viewer__panel">
+      <button class="photos-viewer__close" type="button" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img class="photos-viewer__image" alt="" />
+    </div>
+  `;
+
+  photosSection.appendChild(overlay);
+
+  const backdrop = overlay.querySelector<HTMLDivElement>(
+    ".photos-viewer__backdrop"
+  );
+  const closeBtn = overlay.querySelector<HTMLButtonElement>(
+    ".photos-viewer__close"
+  );
+  const imageEl = overlay.querySelector<HTMLImageElement>(
+    ".photos-viewer__image"
+  );
+
+  if (!backdrop || !closeBtn || !imageEl) return;
+
+  const openViewer = (src: string, alt: string) => {
+    imageEl.src = src;
+    imageEl.alt = alt;
+    overlay.classList.add("is-open");
+  };
+
+  const closeViewer = () => {
+    overlay.classList.remove("is-open");
+  };
+
+  items.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const img = btn.querySelector<HTMLImageElement>("img");
+      if (!img) return;
+      openViewer(img.src, img.alt || "");
+    });
+  });
+
+  closeBtn.addEventListener("click", closeViewer);
+  backdrop.addEventListener("click", closeViewer);
+
+  // optional: close on Escape
+  photosSection.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeViewer();
+    }
+  });
 }
 
 // ---- App router + taskbar behaviour ----
