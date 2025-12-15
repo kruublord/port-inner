@@ -82,6 +82,22 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridRow: 2,
     iconSrc: "/icons/photos.png", // add this asset
   },
+  {
+    id: "icon-devlog",
+    appId: "devlog",
+    label: "Dev Log",
+    gridCol: 2,
+    gridRow: 0,
+    iconSrc: "/icons/devlog.png",
+  },
+  {
+    id: "icon-console",
+    appId: "console",
+    label: "Console",
+    gridCol: 2,
+    gridRow: 1,
+    iconSrc: "/icons/console.png",
+  },
 ];
 
 function computeGridLayout(root: HTMLElement): GridLayout {

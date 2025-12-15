@@ -85,8 +85,8 @@ export class WallpaperManager {
     this.vantaEffect = window.VANTA.WAVES({
       el: this.container,
 
-      mouseControls: true,
-      touchControls: true,
+      mouseControls: false,
+      touchControls: false,
       gyroControls: false,
 
       backgroundAlpha: 0.0, // keep your own desktop gradient

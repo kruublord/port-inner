@@ -1404,3 +1404,87 @@ body {
   color: #020617;
   transform: translateY(-1px);
 }
+
+/* =========================
+   DEV LOG APP 
+   ========================= */
+
+.window-app--devlog .devlog-feed {
+  overflow: auto;
+  height: 100%;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+/* Each entry */
+.window-app--devlog .devlog-entry__inner {
+  position: relative;
+  padding: 14px 14px 34px; /* extra bottom padding so date doesn't overlap */
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Date pinned bottom-right */
+.window-app--devlog .devlog-entry__date {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+/* =========================
+    CONSOLE APP 
+   ========================= */
+
+/* Make the entire window content match CMD */
+.desktop-window__content--console {
+  padding: 0 !important;
+  background: #0c0c0c;
+  overflow: hidden; /* the cmd element will scroll */
+}
+
+/* Ensure the app fills the content area */
+.desktop-window__content--console .window-app--console,
+.desktop-window__content--console .cmd {
+  height: 100%;
+  width: 100%;
+}
+
+/* Your CMD styles (keep these) */
+.desktop-window__content--console .cmd {
+  overflow: auto;
+  background: #0c0c0c;
+  color: #d7d7d7;
+  padding: 14px 14px 18px;
+  font-family: Consolas, "Lucida Console", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+
+.desktop-window__content--console .cmd__buffer,
+.desktop-window__content--console .cmd__line {
+  white-space: pre-wrap;
+}
+
+.desktop-window__content--console .cmd__entry {
+  display: flex;
+  align-items: baseline;
+  margin-top: 6px;
+}
+
+.desktop-window__content--console .cmd__prompt {
+  white-space: pre;
+}
+
+.desktop-window__content--console .cmd__input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  margin: 0;
+}

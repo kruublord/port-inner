@@ -1,5 +1,7 @@
 // src/windows.ts
 import type { DesktopIcon } from "./desktop";
+import { DEVLOG_APP_HTML, initDevLogApp } from "./devlog";
+import { CONSOLE_APP_HTML, initConsoleApp } from "./console";
 
 type AppInstance = {
   win: HTMLDivElement;
@@ -230,6 +232,12 @@ const APP_REGISTRY: Record<string, AppConfig> = {
     title: "Contact",
     bodyHtml: CONTACT_APP_HTML,
   },
+  console: {
+    kind: "text",
+    title: "Console",
+    bodyHtml: CONSOLE_APP_HTML,
+  },
+
   playground: {
     kind: "website",
     title: "Browser",
@@ -245,6 +253,11 @@ const APP_REGISTRY: Record<string, AppConfig> = {
     kind: "text",
     title: "Photos",
     bodyHtml: PHOTOS_APP_HTML,
+  },
+  devlog: {
+    kind: "text",
+    title: "Dev Log",
+    bodyHtml: DEVLOG_APP_HTML,
   },
 };
 
@@ -678,6 +691,37 @@ export function openTextWindow(
   // 🔹 Special setup for Photos app
   if (appId === "photos") {
     initPhotosApp(content);
+  }
+
+  if (appId === "devlog") {
+    initDevLogApp(content);
+  }
+  if (appId === "console") {
+    content.classList.add("desktop-window__content--console");
+
+    initConsoleApp(content, {
+      listAppIds: () => Object.keys(APP_REGISTRY),
+      openAppById: (targetAppId) => {
+        // try to grab matching taskbar button so it behaves like a normal launch
+        const btn =
+          document.querySelector<HTMLButtonElement>(
+            `.taskbar__app-icon[data-app-id="${targetAppId}"]`
+          ) ?? undefined;
+
+        // open via your existing router
+        openApp(
+          windowsLayer,
+          {
+            id: `cmd-${targetAppId}`,
+            appId: targetAppId,
+            label: targetAppId,
+            gridCol: 0,
+            gridRow: 0,
+          },
+          btn
+        );
+      },
+    });
   }
 }
 function initPhotosApp(root: HTMLElement): void {
