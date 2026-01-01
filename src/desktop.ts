@@ -1,5 +1,5 @@
 // src/desktop.ts
-import { createWindowsLayer, openApp } from "./window";
+import { createWindowsLayer, openApp, getRunningAppIds } from "./window";
 import { initStickyNotes, openNotesListWindow } from "./stickyNotes";
 
 const CELL_WIDTH = 104;
@@ -14,6 +14,7 @@ export interface DesktopIcon {
   gridCol: number;
   gridRow: number;
   iconSrc?: string;
+  pinned?: boolean; // NEW: whether app is pinned to taskbar
 }
 
 interface GridLayout {
@@ -31,6 +32,7 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridCol: 0,
     gridRow: 0,
     iconSrc: "/icons/about.png",
+    pinned: true, // Pinned to taskbar
   },
   {
     id: "icon-projects",
@@ -39,6 +41,7 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridCol: 0,
     gridRow: 1,
     iconSrc: "/icons/projects.png",
+    pinned: true, // Pinned to taskbar
   },
   {
     id: "icon-contact",
@@ -47,6 +50,7 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridCol: 0,
     gridRow: 2,
     iconSrc: "/icons/contact.png",
+    pinned: false, // NOT pinned - only shows when open
   },
 
   {
@@ -56,6 +60,7 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridCol: 0,
     gridRow: 3,
     iconSrc: "/icons/resume.png",
+    pinned: false, // Pinned to taskbar
   },
 
   {
@@ -65,6 +70,7 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridCol: 1,
     gridRow: 0,
     iconSrc: "/icons/browser.png",
+    pinned: true, // Pinned to taskbar
   },
   {
     id: "icon-credits",
@@ -73,31 +79,35 @@ const PLACEHOLDER_ICONS: DesktopIcon[] = [
     gridCol: 1,
     gridRow: 1,
     iconSrc: "/icons/credits.png",
+    pinned: true, // Pinned to taskbar
   },
-  {
-    id: "icon-photos",
-    appId: "photos",
-    label: "Photos",
-    gridCol: 1,
-    gridRow: 2,
-    iconSrc: "/icons/photos.png", // add this asset
-  },
-  {
-    id: "icon-devlog",
-    appId: "devlog",
-    label: "Dev Log",
-    gridCol: 2,
-    gridRow: 0,
-    iconSrc: "/icons/devlog.png",
-  },
-  {
-    id: "icon-console",
-    appId: "console",
-    label: "Console",
-    gridCol: 2,
-    gridRow: 1,
-    iconSrc: "/icons/console.png",
-  },
+  // {
+  //   id: "icon-photos",
+  //   appId: "photos",
+  //   label: "Photos",
+  //   gridCol: 1,
+  //   gridRow: 2,
+  //   iconSrc: "/icons/photos.png", // add this asset
+  //   pinned: false,
+  // },
+  // {
+  //   id: "icon-devlog",
+  //   appId: "devlog",
+  //   label: "Dev Log",
+  //   gridCol: 2,
+  //   gridRow: 0,
+  //   iconSrc: "/icons/devlog.png",
+  //   pinned: false,
+  // },
+  // {
+  //   id: "icon-console",
+  //   appId: "console",
+  //   label: "Console",
+  //   gridCol: 2,
+  //   gridRow: 1,
+  //   iconSrc: "/icons/console.png",
+  //   pinned: false,
+  // },
 ];
 
 function computeGridLayout(root: HTMLElement): GridLayout {
@@ -184,7 +194,6 @@ function createIconElement(
   });
 
   // Double-click = open app
-  // NEW
   container.addEventListener("dblclick", (event) => {
     event.stopPropagation();
     setSelectedIcon(root, icon.id);
@@ -383,9 +392,28 @@ function renderIcons(
     setSelectedIcon(root, selectedIconId);
   }
 }
-function createTaskbar(windowsLayer: HTMLElement): {
+
+// NEW: Export function to get running apps from window.ts
+// This will be called by window.ts when apps open/close
+let updateTaskbarCallback: (() => void) | null = null;
+
+export function setTaskbarUpdateCallback(callback: () => void) {
+  updateTaskbarCallback = callback;
+}
+
+export function notifyTaskbarUpdate() {
+  if (updateTaskbarCallback) {
+    updateTaskbarCallback();
+  }
+}
+
+function createTaskbar(
+  windowsLayer: HTMLElement,
+  getRunningAppIds: () => string[]
+): {
   bar: HTMLElement;
   appButtonsById: Record<string, HTMLButtonElement>;
+  updateTaskbar: () => void;
 } {
   const bar = document.createElement("div");
   bar.className = "taskbar";
@@ -394,7 +422,7 @@ function createTaskbar(windowsLayer: HTMLElement): {
   left.className = "taskbar__section taskbar__section--left";
 
   const center = document.createElement("div");
-  center.className = "taskbar__section taskbar__section--center"; // acts as spacer
+  center.className = "taskbar__section taskbar__section--center";
 
   const right = document.createElement("div");
   right.className = "taskbar__section taskbar__section--right";
@@ -410,36 +438,71 @@ function createTaskbar(windowsLayer: HTMLElement): {
 
   const appButtonsById: Record<string, HTMLButtonElement> = {};
 
-  for (const icon of PLACEHOLDER_ICONS) {
-    const appBtn = document.createElement("button");
-    appBtn.className = "taskbar__app-icon";
-    appBtn.title = icon.label;
-    appBtn.dataset.appId = icon.appId;
+  // Function to update taskbar based on pinned + running apps
+  const updateTaskbar = () => {
+    center.innerHTML = ""; // Clear existing buttons
 
-    if (icon.iconSrc) {
-      const img = document.createElement("img");
-      img.src = icon.iconSrc;
-      img.alt = icon.label;
-      img.className = "taskbar__app-icon-img";
-      img.draggable = false;
-      appBtn.appendChild(img);
+    const runningAppIds = getRunningAppIds();
+    const appsToShow = new Set<string>();
+
+    // Add all pinned apps
+    for (const icon of PLACEHOLDER_ICONS) {
+      if (icon.pinned) {
+        appsToShow.add(icon.appId);
+      }
     }
 
-    center.appendChild(appBtn);
-    appButtonsById[icon.appId] = appBtn;
+    // Add all running apps
+    for (const appId of runningAppIds) {
+      appsToShow.add(appId);
+    }
 
-    // NEW
-    appBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
+    // Create buttons for apps to show
+    for (const icon of PLACEHOLDER_ICONS) {
+      if (!appsToShow.has(icon.appId)) continue;
 
-      if (icon.appId === "credits") {
-        openNotesListWindow(windowsLayer);
-        return;
+      const appBtn = document.createElement("button");
+      appBtn.className = "taskbar__app-icon";
+      appBtn.title = icon.label;
+      appBtn.dataset.appId = icon.appId;
+
+      if (icon.iconSrc) {
+        const img = document.createElement("img");
+        img.src = icon.iconSrc;
+        img.alt = icon.label;
+        img.className = "taskbar__app-icon-img";
+        img.draggable = false;
+        appBtn.appendChild(img);
       }
 
-      openApp(windowsLayer, icon, appBtn);
-    });
-  }
+      // Add indicator for open apps (Windows-style underline)
+      const indicator = document.createElement("div");
+      indicator.className = "taskbar__app-indicator";
+      appBtn.appendChild(indicator);
+
+      // Mark as active if app is currently running
+      if (runningAppIds.includes(icon.appId)) {
+        appBtn.classList.add("taskbar__app-icon--active");
+      }
+
+      center.appendChild(appBtn);
+      appButtonsById[icon.appId] = appBtn;
+
+      appBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+
+        if (icon.appId === "credits") {
+          openNotesListWindow(windowsLayer);
+          return;
+        }
+
+        openApp(windowsLayer, icon, appBtn);
+      });
+    }
+  };
+
+  // Initial render
+  updateTaskbar();
 
   const clock = document.createElement("div");
   clock.className = "taskbar__clock";
@@ -450,7 +513,7 @@ function createTaskbar(windowsLayer: HTMLElement): {
   bar.appendChild(center);
   bar.appendChild(right);
 
-  return { bar, appButtonsById };
+  return { bar, appButtonsById, updateTaskbar };
 }
 
 export function initDesktop(root: HTMLElement): void {
@@ -465,7 +528,14 @@ export function initDesktop(root: HTMLElement): void {
 
   const windowsLayer = createWindowsLayer();
 
-  const { bar: taskbar, appButtonsById } = createTaskbar(windowsLayer);
+  const {
+    bar: taskbar,
+    appButtonsById,
+    updateTaskbar,
+  } = createTaskbar(windowsLayer, getRunningAppIds);
+
+  // Set the callback so window.ts can notify us
+  setTaskbarUpdateCallback(updateTaskbar);
 
   root.appendChild(iconsLayer);
   root.appendChild(windowsLayer);

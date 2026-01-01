@@ -230,6 +230,7 @@ body {
 
 /* App buttons in taskbar */
 .taskbar__app-icon {
+  position: relative; /* NEW: for positioning the indicator */
   width: 40px;
   height: 40px;
   border-radius: 8px;
@@ -239,7 +240,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column; /* NEW: stack icon and indicator vertically */
   cursor: pointer;
+  transition: background-color 0.2s ease; /* NEW: smooth transitions */
+}
+
+/* NEW: Hover effect */
+.taskbar__app-icon:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 
 /* The PNG inside each app button */
@@ -250,13 +258,41 @@ body {
   display: block;
 }
 
+/* NEW: Indicator line below icon (Windows-style) */
+.taskbar__app-indicator {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background-color: #4b8dff; /* Modern blue */
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
 /* Active / minimized visual states (optional, for your JS classes) */
 .taskbar__app-icon--active {
   background: rgba(0, 0, 0, 0.04);
 }
 
+/* NEW: Show indicator when app is active (open) */
+.taskbar__app-icon--active .taskbar__app-indicator {
+  width: 24px;
+}
+
+/* NEW: Enhanced hover for active apps */
+.taskbar__app-icon--active:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
 .taskbar__app-icon--minimized {
   opacity: 0.4;
+}
+
+/* NEW: Dim indicator when minimized */
+.taskbar__app-icon--minimized .taskbar__app-indicator {
+  opacity: 0.5;
 }
 
 /* Clock: bigger and padded from right edge */

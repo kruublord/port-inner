@@ -1,5 +1,6 @@
 // src/windows.ts
 import type { DesktopIcon } from "./desktop";
+import { notifyTaskbarUpdate } from "./desktop";
 import { DEVLOG_APP_HTML, initDevLogApp } from "./devlog";
 import { CONSOLE_APP_HTML, initConsoleApp } from "./console";
 
@@ -13,6 +14,12 @@ type AppInstance = {
 
 const runningApps = new Map<string, AppInstance>();
 let zCounter = 1;
+
+// NEW: Export function to get list of running app IDs
+export function getRunningAppIds(): string[] {
+  return Array.from(runningApps.keys());
+}
+
 // ---- App registry types ----
 
 type TextAppConfig = {
@@ -557,6 +564,9 @@ function createWindowShell(
   };
   runningApps.set(appId, instance);
 
+  // NEW: Notify taskbar that an app was opened
+  notifyTaskbarUpdate();
+
   if (taskbarButton) {
     taskbarButton.classList.add("taskbar__app-icon--active");
     taskbarButton.classList.remove("taskbar__app-icon--minimized");
@@ -614,6 +624,10 @@ function createWindowShell(
     win.remove();
     const inst = runningApps.get(appId);
     runningApps.delete(appId);
+
+    // NEW: Notify taskbar that an app was closed
+    notifyTaskbarUpdate();
+
     if (inst?.taskbarButton) {
       inst.taskbarButton.classList.remove(
         "taskbar__app-icon--active",
