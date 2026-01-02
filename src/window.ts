@@ -248,7 +248,7 @@ const APP_REGISTRY: Record<string, AppConfig> = {
   playground: {
     kind: "website",
     title: "Browser",
-    url: "https://inner-portfolio-js.vercel.app/",
+    url: "https://curt-folio.vercel.app/",
   },
 
   resume: {
